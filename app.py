@@ -15,12 +15,9 @@ st.set_page_config(page_title="Eco-Track Logistics AI", layout="wide")
 #OS_USERNAME = "dakshajaan2012@gmail.com"
 #OS_PASSWORD = "Elephant35#" 
 
-#OS_USERNAME = "dakshajaan2012@gmail.com"
-#OS_PASSWORD = "Elephant35#" 
-
 # For strealite
-OS_USERNAME = st.secrets["OS_USERNAME"]
-OS_PASSWORD = st.secrets["OS_PASSWORD"]
+#OS_USERNAME = st.secrets["OS_USERNAME"]
+#OS_PASSWORD = st.secrets["OS_PASSWORD"]
 
 
 
@@ -75,22 +72,32 @@ def calculate_metrics(weight, distance, mode):
     return round(total_co2, 2), round(total_cost, 2)
 
 @st.cache_data(ttl=60) 
+@st.cache_data(ttl=60) # CRITICAL: Prevents API banning on Streamlit Cloud
 def get_air_data():
     """Fetches live data using OpenSky Credentials with updated column mapping"""
+    # Use st.secrets to get your credentials securely
     try:
+        # 1. Access Credentials from Streamlit Secrets
+        USER = st.secrets["OS_USERNAME"]
+        PASS = st.secrets["OS_PASSWORD"]
+    
+        
         url = "https://opensky-network.org/api/states/all"
+        
+        # 2. Make the Request
         response = requests.get(
             url, 
-            auth=(OS_USERNAME, OS_PASSWORD), 
+            auth=(USER, PASS), 
             timeout=15, 
-            verify=False
+            verify=False # Helps bypass some server-side SSL issues
         )
         
         if response.status_code == 200:
             data = response.json()
             states = data.get('states')
             
-            if states:
+            # 3. Only process if states is NOT None
+            if states is not None:
                 all_cols = [
                     'icao24', 'callsign', 'origin_country', 'time_pos', 'last_contact', 
                     'lon', 'lat', 'alt', 'on_ground', 'velocity', 'true_track', 
@@ -98,15 +105,16 @@ def get_air_data():
                 ]
                 df = pd.DataFrame(states, columns=all_cols)
                 df = df.dropna(subset=['lon', 'lat']).head(150)
-                return df, "🟢 Live Satellite Feed"
+                return df, "🟢 LIVE SATELLITE FEED (Authenticated)"
         
         elif response.status_code == 401:
             return pd.DataFrame(), "🔴 Error: Invalid Credentials (401)"
             
-    except Exception:
-        pass
+    except Exception as e:
+        # Log the error to the Streamlit console for you to see, but don't stop the app
+        print(f"Cloud API Error: {e}") 
     
-    # FALLBACK MOCK DATA
+    # 4. FALLBACK MOCK DATA (Triggers if API is down, timed out, or empty)
     mock_df = pd.DataFrame({
         'callsign': [f'CRGO{i}' for i in range(100)],
         'lon': np.random.uniform(-160, 160, 100),
