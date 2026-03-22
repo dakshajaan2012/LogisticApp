@@ -12,8 +12,16 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 st.set_page_config(page_title="Eco-Track Logistics AI", layout="wide")
 
 # --- OPENSKY CREDENTIALS ---
-OS_USERNAME = "dakshajaan2012@gmail.com"
-OS_PASSWORD = "Elephant35#" 
+#OS_USERNAME = "dakshajaan2012@gmail.com"
+#OS_PASSWORD = "Elephant35#" 
+
+#OS_USERNAME = "dakshajaan2012@gmail.com"
+#OS_PASSWORD = "Elephant35#" 
+
+# For strealite
+OS_USERNAME = st.secrets["OS_USERNAME"]
+OS_PASSWORD = st.secrets["OS_PASSWORD"]
+
 
 
 # 2. PROFESSIONAL CALCULATION LOGIC
