@@ -1,14 +1,9 @@
-# Python
+build/
+dist/
+env310/
+*.spec
 __pycache__/
 *.pyc
 
-# Virtual environment
-env310/
-venv/
-
-# PyInstaller
-*.spec
-
-# OS files
-.DS_Store
-Thumbs.db
+#.py files
+run_app.py
