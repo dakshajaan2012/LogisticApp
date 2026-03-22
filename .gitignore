@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+env310/
+venv/
+
+# PyInstaller
+*.spec
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,39 @@
+"""def calculate_metrics(weight, distance, mode):
+    Calculates CO2 and Cost using weighted distance and fixed handling fees.
+    
+    # Emission Factors (g CO2 per tonne-km)
+    co2_factors = {
+        "Air Cargo": 500, 
+        "Sea Freight": 15, 
+        "Hybrid (Sea-Air)": 150
+    }
+    
+    # Cost Factors ($ per kg per 1000km)
+    cost_factors = {
+        "Air Cargo": 2.50, 
+        "Sea Freight": 0.15, 
+        "Hybrid (Sea-Air)": 0.85
+    }
+
+    # Fixed Handling/Terminal Fees per shipment
+    handling_fees = {
+        "Air Cargo": 150.00, 
+        "Sea Freight": 500.00, 
+        "Hybrid (Sea-Air)": 350.00
+    }
+    
+    if mode not in co2_factors:
+        return 0.0, 0.0
+
+    # --- Carbon Calculation (Result in Metric Tons) ---
+    tons = weight / 1000
+    # Formula: (Tons * Distance * g_Factor) / 1,000,000 (to get Tons CO2)
+    total_co2 = (tons * distance * co2_factors[mode]) / 1000000
+    
+    # --- Price Calculation (Result in USD) ---
+    # Formula: (Weight * Distance_Unit * Factor) + Fixed Fee
+    base_price = weight * (distance / 1000) * cost_factors[mode]
+    total_cost = base_price + handling_fees[mode]
+    
+    return round(total_co2, 2), round(total_cost, 2)
+ """
