@@ -12,8 +12,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 st.set_page_config(page_title="Eco-Track Logistics AI", layout="wide")
 
 # --- OPENSKY CREDENTIALS ---
-#OS_USERNAME = "dakshajaan2012@gmail.com"
-#OS_PASSWORD = "Elephant35#" 
+#OS_USERNAME = "@gmail.com"
+#OS_PASSWORD = "xxx" 
 
 # For strealite
 #OS_USERNAME = st.secrets["OS_USERNAME"]
@@ -72,38 +72,32 @@ def calculate_metrics(weight, distance, mode):
     return round(total_co2, 2), round(total_cost, 2)
 
 
-@st.cache_data(ttl=60) 
+@st.cache_data(ttl=60) # CRITICAL: Prevents API banning on Streamlit Cloud
 def get_air_data():
-    """Cloud-optimized fetcher for OpenSky Data"""
+    """Fetches live data using OpenSky Credentials with updated column mapping"""
+    # Use st.secrets to get your credentials securely
     try:
-        # 1. Access Credentials
-        if "OS_USERNAME" in st.secrets:
-            USER = st.secrets["OS_USERNAME"]
-            PASS = st.secrets["OS_PASSWORD"]
-        else:
-            # Fallback for local testing if secrets file is missing
-            return mock_df, "🟡 ARCHIVED: Missing st.secrets config"
+        # 1. Access Credentials from Streamlit Secrets
+        USER = st.secrets["OS_USERNAME"]
+        PASS = st.secrets["OS_PASSWORD"]
+        #USER = "@gmail.com"
+        #PASS = "xxx" 
     
         url = "https://opensky-network.org/api/states/all"
         
-        # 2. Add Identity Headers (Cloud servers often need this to not look like a bot)
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) EcoTrack/2.1',
-            'From': USER
-        }
-        
-        # 3. Make the Request
+        # 2. Make the Request
         response = requests.get(
             url, 
             auth=(USER, PASS), 
-            headers=headers,
-            timeout=20, # High timeout for slow cloud-to-satellite handshakes
-            verify=False 
+            timeout=15, 
+            verify=False # Helps bypass some server-side SSL issues
         )
         
         if response.status_code == 200:
             data = response.json()
             states = data.get('states')
+            
+            # 3. Only process if states is NOT None
             if states is not None:
                 all_cols = [
                     'icao24', 'callsign', 'origin_country', 'time_pos', 'last_contact', 
@@ -114,17 +108,14 @@ def get_air_data():
                 df = df.dropna(subset=['lon', 'lat']).head(150)
                 return df, "🟢 LIVE SATELLITE FEED (Authenticated)"
         
-        # --- DIAGNOSTIC: Show error code in sidebar if not 200 ---
-        elif response.status_code == 429:
-            return mock_df, "🟡 ARCHIVED: OpenSky Rate Limit (Too many requests)"
         elif response.status_code == 401:
-            return mock_df, "🔴 ARCHIVED: Invalid Credentials (401)"
+            return pd.DataFrame(), "🔴 Error: Invalid Credentials (401)"
             
     except Exception as e:
-        # This will now show the error in your Streamlit Sidebar so you can see it
-        st.sidebar.warning(f"Connection Debug: {str(e)[:50]}")
+        # Log the error to the Streamlit console for you to see, but don't stop the app
+        print(f"Cloud API Error: {e}") 
     
-    # FALLBACK MOCK DATA
+    # 4. FALLBACK MOCK DATA (Triggers if API is down, timed out, or empty)
     mock_df = pd.DataFrame({
         'callsign': [f'CRGO{i}' for i in range(100)],
         'lon': np.random.uniform(-160, 160, 100),
