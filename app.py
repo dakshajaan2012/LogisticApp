@@ -117,12 +117,14 @@ def get_air_data():
     
     # 4. FALLBACK MOCK DATA (Triggers if API is down, timed out, or empty)
     mock_df = pd.DataFrame({
-        'callsign': [f'CRGO{i}' for i in range(100)],
-        'lon': np.random.uniform(-160, 160, 100),
-        'lat': np.random.uniform(-50, 70, 100),
-        'alt': np.random.uniform(9000, 11000, 100),
-        'origin_country': np.random.choice(["USA", "China", "Germany", "UAE", "Singapore"], 100)
+        'callsign': [f'CRGO{i}' for i in range(250)], # Increase to 250 planes
+        'lon': np.random.normal(0, 80, 250),           # Clustered more realistically
+        'lat': np.random.normal(30, 30, 250),          # Focused on the Northern Hemisphere
+        'alt': np.random.uniform(9000, 11000, 250),
+        'origin_country': np.random.choice(["USA", "China", "Germany", "UAE", "Singapore"], 250)
     })
+    # Filter out impossible coordinates
+    mock_df = mock_df[(mock_df['lat'].between(-90, 90)) & (mock_df['lon'].between(-180, 180))]
     return mock_df, "🟡 ARCHIVED GLOBAL SNAPSHOT (Offline Mode)"
 
 # 3. SIDEBAR
